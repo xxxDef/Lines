@@ -1,201 +1,284 @@
-const rows = 9;  
-        const selectedAttr = "selected";
-        const gameField = [];
 
-        const gameFieldPlaceholder = window.document.getElementById("gameField");
-        for (let r = 0; r < rows; ++r){
+
+class Logic
+{
+    static getPath(gameField, source, target)
+    {
+        function initDistance(r, c) {
+            const cell = gameField.getCell(r,c);
+            if (cell == source)
+                return 0;  // source
+            if (cell.color !== null)
+                return null; // occuped
+            return Infinity; // possible target
+        }
+
+        const field = Array.from(
+            { length: gameField.Rows }, (_, r) => Array.from(
+                {length: gameField.Rows }, (_, c) => initDistance(r, c)));
+
+        while (this.#fillDistances(field));
+
+        console.log(field);
+
+        const trace = this.tracePath(field,  target);
+        console.log(trace);
+        return trace;
+    }
+
+    static tracePath(field, curPos) {
+               
+        let curLen = field[curPos.row][curPos.col];
+        if (curLen === Infinity)
+            return [];
+
+        function findMin(res, pos) {
+            const curLen = field[pos.row][pos.col];
+            if (curLen === null)
+                return res;
+            if (res === null)
+                return pos;
+            const resLen = field[res.row][res.col]
+  
+            if (curLen < resLen)
+                return pos;
+            return res;
+        }
+
+        const nextPos= this.#getNeighbors(field, curPos.row, curPos.col).reduce(findMin, null);    
+
+        const nextLen = field[nextPos.row][nextPos.col];
+        if (nextLen === 0)
+            return [nextPos];
+
+        var next = this.tracePath(field, nextPos);
+        return [...next, nextPos];
+    }
+
+    static * #getNeighbors(field, row, col) {            
+        if (field[row-1] !== undefined)
+            yield {row: row-1, col};
+        if (field[row+1] !== undefined)
+            yield {row:row+1, col};
+        if (field[row][col-1] !== undefined)
+            yield {row, col:col-1};
+        if (field[row][col+1] !== undefined)
+            yield {row, col:col+1};
+    }
+
+    static #fillDistances(field) {
+        let found = 0;
+        for (let row = 0; row < field.length; ++row)
+        {
+            for (let col = 0; col < field[row].length; ++col)
+            {
+                const curLen = field[row][col];
+                if (curLen === null) // occuped
+                    continue;
+
+                const neibors = this.#getNeighbors(field, row, col);
+
+                const lengths = neibors
+                    .map(n => field[n.row][n.col])
+                    .filter(l => l !== null)
+                    .toArray();                      
+                
+                if (lengths.length == 0)
+                    continue;
+
+                const minLen = Math.min(...lengths) + 1;
+                if (minLen < curLen){
+                    field[row][col] = minLen;
+                    found++;
+                }
+            }
+        }
+        console.log(field);
+        return found;
+    }
+}
+
+class GameCell {
+    row;
+    col;
+    node;
+    
+    #selected;
+    #color;
+
+    constructor(parentDiv, r, c){
+        const cellNode = document.createElement("div");
+        cellNode.classList.add("cell");
+        cellNode.id = `cell${r}-${c}`;
+        cellNode.appendChild(document.createElement("div"));
+
+        parentDiv.appendChild(cellNode);
+
+        this.col = c;
+        this.row = r;
+        this.node = cellNode;
+        this.#selected = false;
+        this.#color = null;          
+    }
+
+    get color() {
+        return this.#color;
+    }
+
+    get selected() {
+        return this.#selected;
+    }
+
+    select() {
+        this.node.classList.add("selected");      
+        this.#selected = true;
+    }
+
+    deselect() {
+        this.node.classList.remove("selected");       
+        this.#selected = false;   
+    }
+
+    setColor(color) {
+        this.#color = color;
+        this.node.classList.add("color" + this.#color);
+        this.node.classList.add("circle");
+   
+    }
+
+    removeColor() {
+        this.node.classList.remove("color" + this.#color);
+        this.node.classList.remove("circle");
+        this.#color = null;
+    }
+
+    hidePath(color) {
+        this.node.classList.remove("path");
+        this.node.classList.remove("color"+ color);
+    }
+    
+    showPath(color) {
+        this.node.classList.add("path");
+        this.node.classList.add("color" + color);
+    }
+
+    set onClick(handler) {
+        this.node.addEventListener("click", () => handler(this)); 
+    };    
+
+    set onRightClick(handler) {
+        this.node.addEventListener("contextmenu", (e) => {
+            handler(this);
+            e.preventDefault();
+        }); 
+    };
+    
+}
+
+class LinesGame
+{
+    static rows = 9;  
+    static selectedAttr = "selected";
+
+    get Rows() {
+        return 9;
+    }
+    get Colors() {
+        return 5;
+    }
+    
+    #gameField = [];
+    #animationInProgress = false;
+
+    constructor(parentDiv) {
+        for (let r = 0; r < this.Rows; ++r){
             const rowNode = document.createElement("div");
             rowNode.classList.add("row");
             rowNode.id = `row${r}`;
-            gameFieldPlaceholder.appendChild(rowNode);
+            parentDiv.appendChild(rowNode);
             
+            for (let c = 0; c < this.Rows; ++c){
 
-            for (let c = 0; c < rows; ++c){
-                const cellNode = document.createElement("div");
-                cellNode.classList.add("cell");
-                cellNode.id = `cell${r}-${c}`;
-                cellNode.classList.add("cell");
-                cellNode.appendChild(document.createElement("div"));
-
-                rowNode.appendChild(cellNode);
-
-                const cell = {
-                    node : cellNode,
-                    color : null,
-                    selected : false,
-                    col : c,
-                    row : r
-                };
-                gameField[r * rows + c] = cell;
-
-                cellNode.addEventListener("click", (e) => onClickCell(cell));                
-                cellNode.addEventListener("contextmenu", (e) => onRightClickCell(cell, e));                
-            }
-        }
-        
-        function onClickCell(cell) {
-            if (cell.node.classList.contains("circle"))
-                selectCell(cell);
-            else{
-                moveSelectedTo(cell);
-                //addCircle(cell, 2);
-            }
+                const cell = new GameCell(rowNode, r, c);
+                cell.onClick = this.#onClickCell;
+                cell.onRightClick = this.#onRightClickCell;
                 
+                this.#gameField[r * this.Rows + c] = cell;      
+            }
         }
-        function onRightClickCell(cell, e) {
-            if (!cell.node.classList.contains("circle"))
-                addCircle(cell, 2);
+    }
+
+    getCell = (r, c) => this.#gameField[r* this.Rows + c];
+
+    #onClickCell = (cell) => {
+        if (cell.color !== null)
+            this.selectCell(cell);
+        else{
+            if (!this.#animationInProgress)
+                this.#moveSelectedTo(cell);
+        }
             
-            e.preventDefault();
+    }
+    #onRightClickCell = (cell) => {
+        if (cell.color === null) {
+            const color = this.#generateColor();
+            cell.setColor(color);
+        }
+            
+    }
+
+    #generateColor() {
+        return Math.floor(Math.random() * this.Colors);
+    }
+    
+    
+    #moveSelectedTo(cell) {
+        const sel = this.#gameField.find(c => c.selected);
+        if (!sel)
+            return;
+
+        const path = Logic.getPath(this, sel, cell);
+        if (path.length === 0)
+            return;
+        console.log(path);
+
+        sel.deselect();  
+        const color = sel.color;
+     
+        sel.removeColor();
+        this.#showPath(0, path, color, () => {
+            cell.setColor(color);
+            this.#removeLines();
+        });            
+    }
+
+    #removeLines() {
+        
+    }
+
+    #showPath(current, path, color, lastStep) {
+
+        if (current == path.length)
+        {
+            path.forEach(p => this.getCell(p.row, p.col).hidePath(color));  
+            lastStep();
+            console.log("last timer", current);  
+            this.#animationInProgress = false;           
+        }
+        else {            
+            this.#animationInProgress = true;
+            const cell = this.getCell(path[current].row, path[current].col);
+            cell.showPath(color);
+            setTimeout(() => this.#showPath(current+1, path, color, lastStep), 50);
+            console.log("next timer", current);
+            
         }
         
-        function moveSelectedTo(cell){
-            const sel = gameField.find(c => c.node.classList.contains(selectedAttr));
-            if (!sel)
-                return;
+    }
 
-            const path = getPath(sel, cell);
-            console.log(path);
+    selectCell(cell) {           
+        this.#gameField.filter(c => c !== cell).forEach(c => c.deselect());
+        cell.select();        
+    }
+}
 
-            sel.node.classList.remove("selected");
-            sel.node.classList.remove("circle");   
-         
-            showPath(0, path, () => {
-                cell.node.classList.add("color2");
-                cell.node.classList.add("circle");
-            });
-    
-        }
-
-        function showPath(current, path, lastStep) {
-
-            if (current == path.length)
-            {
-                path.forEach(p => {
-                    gameField[p.r * rows + p.c].node.classList.remove("path");
-                    gameField[p.r * rows + p.c].node.classList.remove("color2");
-                }   );  
-                lastStep();
-                console.log("last timer", current);             
-            }
-            else {            
-                gameField[path[current].r * rows + path[current].c].node.classList.add("path");
-                gameField[path[current].r * rows + path[current].c].node.classList.add("color2");
-                setTimeout(() => showPath(current+1, path, lastStep), 50);
-                console.log("next timer", current);
-            }
-            
-        }
-
-        function* getNeighbors(arr, r, c) {            
-            if (arr[r-1] !== undefined)
-                yield {r: r-1, c};
-            if (arr[r+1] !== undefined)
-                yield {r : r+1, c};
-            if (arr[r][c-1] !== undefined)
-                yield {r, c: c-1};
-            if (arr[r][c+1] !== undefined)
-                yield {r, c: c+1};
-        }
-
-        function getPos(node) {
-            const reg = /cell(?<r>\d+)\-(?<c>\d+)/;
-            const res = reg.exec(node.id);
-            return {r:parseInt(res.groups.r), c:parseInt(res.groups.c)};
-        }
-
-        function getPath(source, target)
-        {
-            function initLength(r, c) {
-                const cell = gameField[r* rows + c];
-                if (cell == source)
-                    return 0;
-                if (cell.node.classList.contains("circle"))
-                    return null;
-                return Infinity;
-            }
-
-            const arrfield = Array.from(
-                { length: rows }, (_, r) => Array.from(
-                    {length: rows}, (_, c) => initLength(r, c)));
-
-            let found = Infinity;
-            while (found) {
-                found = 0;
-                for (let r = 0; r < rows; ++r)
-                {
-                    for (let c = 0; c < rows; ++c)
-                    {
-                        const curLen = arrfield[r][c];
-                        if (curLen === null) // occuped
-                            continue;
-
-                        const neibors = getNeighbors(arrfield, r, c);
-
-                        const lengths = neibors
-                            .map(n => arrfield[n.r][n.c])
-                            .filter(l => l !== null)
-                            .toArray();                      
-                        
-                        if (lengths.length == 0)
-                            continue;
-
-                        const minLen = Math.min(...lengths) + 1;
-                        if (minLen < curLen){
-                            arrfield[r][c] = minLen;
-                            found++;
-                        }
-                    }
-                }
-                console.log(`finding path, make ${found} changes`);                
-            }
-
-            console.log(arrfield);
-
-            const targetPos = getPos(target.node);
-
-            const trace = tracePath(arrfield, targetPos);
-            console.log(trace);
-            return trace;
-        }
-
-        function tracePath(field, targetPos) {
-            
-            let curPos = targetPos;
-            let curLen = field[curPos.r][curPos.c];
-            if (curLen === Infinity)
-                return [];
-
-            const neibors = getNeighbors(field, curPos.r, curPos.c).toArray();
-            
-            for (let n of neibors){
-                const len = field[n.r][n.c];
-                if (len == null)
-                continue;
-                if (len < curLen) {
-                    curPos = n;
-                    curLen = len;
-                }
-                    
-            }
-            
-            console.log("path:", curPos);
-            if (curLen === 0)
-                return [curPos];
-
-            var next = tracePath(field, curPos);
-            return [...next, curPos];
-        }
-
-        function addCircle(cell, color) {           
-            cell.node.classList.add("circle");
-            cell.node.classList.add("color"+color);
-        }
-
-        function selectCell(cell) {           
-            gameField.filter(c => c !== cell).forEach(c => {
-                c.selected = false;
-                c.node.classList.remove(selectedAttr);
-            })
-            cell.node.classList.add(selectedAttr);
-        }
