@@ -2,6 +2,87 @@
 
 class Logic
 {
+    static * generateLines(rows, minLine) {
+        // horisontal
+        for (let row = 0; row < rows; ++row)  {
+            for (let col = 0; col < rows; ++col)
+                yield {row, col};
+            yield null;
+        }
+        
+        // vertical
+        for (let col = 0; col < rows; ++col)  {
+            for (let row = 0; row < rows; ++row)
+                yield {row, col};
+            yield null;
+        }
+
+        // Enumerate primary diagonals (from top-left to bottom-right)
+        for (let diff = -(rows - 1); diff <= rows - 1; diff++) {
+            for (let row = 0; row < rows; row++) {
+                let col = row - diff;
+                if (col >= 0 && col < rows) 
+                    yield {row, col};
+                
+            }
+            yield null;
+        }
+        for (let sum = 0; sum <= 2 * (rows - 1); sum++) {
+            console.log(`Secondary diagonal with row + col = ${sum}`);
+            for (let row = 0; row < rows; row++) {
+                let col = sum - row;
+                if (col >= 0 && col < rows) {
+                    yield {row, col};
+                }
+            }
+        }
+
+    }
+    static findItemsToRemove(gameField, minLine = 5){
+        const result = [];
+
+        function addToResult(line) {
+            if (line.length >= minLine)
+                result.push(...line);
+        }
+
+        let color = null;
+        let line = [];
+        for (let pos of this.generateLines(gameField.Rows, minLine))
+        {
+            if (pos === null)  // breaker
+            {
+                addToResult(line);
+                line = [];
+                color = null;
+                continue;
+            }
+
+            const cell = gameField.getCell(pos.row, pos.col);
+            
+            if (cell.color === null)
+            {
+                addToResult(line);
+                line = [];
+                color = null;
+                continue;
+            }
+            
+            if (color != cell.color) {
+                addToResult(line);
+                line = [cell];
+                color = cell.color;
+                continue;
+            }
+            
+            if (color !== null) {
+                line.push(cell);
+            }
+        }
+        addToResult(line);
+
+        return result;
+    }
     static getPath(gameField, source, target)
     {
         function initDistance(r, c) {
@@ -140,16 +221,16 @@ class GameCell {
     }
 
     setColor(color) {
-        this.#color = color;
-        this.node.classList.add("color" + this.#color);
-        this.node.classList.add("circle");
-   
-    }
-
-    removeColor() {
-        this.node.classList.remove("color" + this.#color);
-        this.node.classList.remove("circle");
-        this.#color = null;
+        if (color === null){
+            this.node.classList.remove("color" + this.#color);
+            this.node.classList.remove("circle");
+            this.#color = null;
+        }
+        else {
+            this.#color = color;
+            this.node.classList.add("color" + this.#color);
+            this.node.classList.add("circle");
+        }
     }
 
     hidePath(color) {
@@ -160,6 +241,13 @@ class GameCell {
     showPath(color) {
         this.node.classList.add("path");
         this.node.classList.add("color" + color);
+    }
+    
+    showRemoving() {
+        this.node.classList.add("removing");
+    }
+    hideRemoving() {
+        this.node.classList.remove("removing");
     }
 
     set onClick(handler) {
@@ -223,8 +311,7 @@ class LinesGame
         if (cell.color === null) {
             const color = this.#generateColor();
             cell.setColor(color);
-        }
-            
+        }         
     }
 
     #generateColor() {
@@ -245,7 +332,7 @@ class LinesGame
         sel.deselect();  
         const color = sel.color;
      
-        sel.removeColor();
+        sel.setColor(null);
         this.#showPath(0, path, color, () => {
             cell.setColor(color);
             this.#removeLines();
@@ -253,7 +340,18 @@ class LinesGame
     }
 
     #removeLines() {
+        const itemsToRemove = Logic.findItemsToRemove(this);
+        this.#animationInProgress = true;
+        for (let cell of itemsToRemove)
+            cell.showRemoving();
         
+        setTimeout(() => {
+            for (let cell of itemsToRemove) {                
+                cell.hideRemoving();
+                cell.setColor(null);
+            }
+            this.#animationInProgress = false;
+        }, 300);     
     }
 
     #showPath(current, path, color, lastStep) {
@@ -269,7 +367,7 @@ class LinesGame
             this.#animationInProgress = true;
             const cell = this.getCell(path[current].row, path[current].col);
             cell.showPath(color);
-            setTimeout(() => this.#showPath(current+1, path, color, lastStep), 50);
+            setTimeout(() => this.#showPath(current+1, path, color, lastStep), 30);
             console.log("next timer", current);
             
         }
