@@ -1,0 +1,148 @@
+
+#gameField  {
+    background-color: green;
+    width: 495;
+    height: 495;
+    position: relative;
+    left: 100px;
+    top: 50px;
+    font-size: 0;
+}
+
+.cell {
+    background-color: gray;
+    width: 55;
+    height: 55;
+    padding: 5;
+    margin: 0;
+    border-style: inset;
+    box-sizing: border-box;
+    display: inline-block;
+}
+
+@keyframes jumpAnimation {
+    from {
+        box-shadow: 5px 10px 10px -1px black;
+        transform: translate(0px, -6px);
+        height: 100%;
+    } 
+    25%{
+        box-shadow: 5px 9px 10px -1px black;
+        transform: translate(0px, -5px);
+        height: 100%;
+    }  
+    50%{
+        box-shadow: 5px 7px 10px -1px black;
+        transform: translate(0px, -3px);
+        height: 100%;
+    }  
+    75%{
+        box-shadow: 4px 5px 10px -1px black;
+        transform: translate(0px, -0px);
+        height: 97%;
+    }  
+    
+    to {
+        box-shadow: 3px 4px 10px -1px black;
+        transform: translate(0px, 2px);
+        height: 95%;
+    }
+}
+
+@keyframes moveLeftAnimation {
+    from {
+        box-shadow: 5px 10px 10px -1px black;
+        transform: translate(0px, -6px);
+        height: 100%;
+    } 
+    25%{
+        box-shadow: 5px 9px 10px -1px black;
+        transform: translate(-5px, -5px);
+        height: 100%;
+    }  
+    50%{
+        box-shadow: 5px 7px 10px -1px black;
+        transform: translate(-10px, -3px);
+        height: 100%;
+    }  
+    75%{
+        box-shadow: 4px 5px 10px -1px black;
+        transform: translate(-15px, -0px);
+        height: 97%;
+    }  
+    
+    to {
+        box-shadow: 3px 4px 10px -1px black;
+        transform: translate(-20px, 2px);
+        height: 95%;
+    }
+}
+
+@keyframes pathAnimation {
+    from {
+        opacity: 1;
+        
+    } 
+    to {
+        opacity: 0.1;
+    }
+}
+
+
+
+ .circle > div{
+    background-color: blue;
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+    
+    box-shadow: 3px 4px 10px -1px black;
+   
+    transition-property: box-shadow, transform;
+    transition-duration: 0.5s;  
+}
+.color2 > div{
+    background-image: -webkit-radial-gradient(25% 30%, circle,white, blue);   
+}
+.circle:hover > div{
+    transform: translate(0px, -6px);
+    box-shadow: 5px 10px 10px -1px black;
+}
+
+.selected > div{
+    animation-name: jumpAnimation;
+    animation-duration: 0.3s;
+    animation-iteration-count: infinite; 
+    animation-direction: alternate;
+}
+.path > div {
+    
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+     
+    animation-name: pathAnimation;
+    animation-duration: 0.5s;
+    opacity: 0.0;
+    
+}
+
+
+.placeholder > div{
+
+    background-color: rgba(0, 0, 255, 0);
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+    transition-property: background-color;
+    transition-duration: 2s;
+}
+
+.placeholder:hover > div{
+    background-color: rgba(0, 0, 255, 0.26);
+}
+
+
+.break {
+    float: none;
+}
