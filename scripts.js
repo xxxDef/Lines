@@ -323,6 +323,10 @@ class LinesGame
     #high = 0;
 
     constructor() {
+
+        const resetButton = document.getElementById("restart");
+        resetButton.onclick = this.reset;
+
         const gameFieldDiv = document.getElementById("gameField");
         for (let r = 0; r < this.Rows; ++r){
             const rowNode = document.createElement("div");
@@ -344,6 +348,18 @@ class LinesGame
             const node = document.getElementById(`nextCircle${i}`);
             this.#nextCircles[i] = new NextCircle(node);
         }
+        this.highlightScore();
+        this.highlightHigh();
+        this.nextTurn();
+    }
+
+    reset = () => {
+        for (let c of this.#gameField) {
+            if (c.color != null)
+                c.setColor(null);
+            c.deselect();
+        }
+        this.#score = 0;
         this.highlightScore();
         this.highlightHigh();
         this.nextTurn();
