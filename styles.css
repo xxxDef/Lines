@@ -1,39 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=Bruno Ace&display=swap");
+
+body {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
 
 #gameContainer {
     display: flex;
-    flex-direction: row;
-    background-color: aqua;
+    flex-direction: column;
+    background-color: rgba(20, 112, 211, 0.276);
     
     justify-content: center;
-    border:2px solid #ea1313;
+    border:2px solid gray;
+
+    font-family: "Bruno Ace";
+    padding: 1em;
+    box-shadow: 3px 4px 10px -1px rgba(0, 0, 0, 0.598);
 }
 
 #gameField  {
     display: flex;
-    border:2px solid #b4ee08;
+    
     flex-direction: column;
     flex-wrap:nowrap;
-    margin: 1em;
-}
-
-#rightPane {
-    display: flex;
-    flex-direction: column;
-    justify-content:space-around;
-}
-#score {
-    margin: 1em;
-    padding: 2em;
-    border:2px solid #b4ee08;
-    background-color: bisque;
+    border:1px solid gray;
 }
 
 
 .row {
-    display: inline-flex;
+    display: flex;
     flex-direction: row;
     flex-wrap:nowrap;
-    border:2px solid #c70404;
+    
 }
 .cell {
     background-color: lightgray;
@@ -101,47 +101,45 @@
     }
 }
 
-
-
- .circle > div{
+ .circle {
     height: 100%;
     width: 100%;
     border-radius: 50%;
     
     box-shadow: 3px 4px 10px -1px rgba(0, 0, 0, 0.813);
-   
     transition-property: box-shadow, transform;
     transition-duration: 0.5s;  
 }
 
-.color0 > div{
+.color0  {
     background-image: -webkit-radial-gradient(25% 30%, circle,white, darkorange);   
 }
-.color1 > div{
+.color1  {
     background-image: -webkit-radial-gradient(25% 30%, circle,white, blue);   
 }
-.color2 > div{
+.color2  {
     background-image: -webkit-radial-gradient(25% 30%, circle,white, darkred);   
 }
-.color3 > div{
+.color3  {
     background-image: -webkit-radial-gradient(25% 30%, circle,white, darkgreen);   
 }
-.color4 > div{
+.color4  {
     background-image: -webkit-radial-gradient(25% 30%, circle,white, darkmagenta);   
 }
 
-.circle:hover > div{
+.circle:hover  {
     transform: translate(0px, -6px);
     box-shadow: 5px 10px 10px -1px rgba(0, 0, 0, 0.598);
 }
 
-.selected > div{
+.selected  {
     animation-name: jumpAnimation;
     animation-duration: 0.3s;
     animation-iteration-count: infinite; 
     animation-direction: alternate;
 }
-.path > div { 
+
+.path  { 
     height: 100%;
     width: 100%;
     border-radius: 50%;    
@@ -150,29 +148,94 @@
     opacity: 0.0;
 }
 
-.removing > div {
-    
+.removing  {   
     animation-name: removingAnimation;
     animation-duration: 0.3s;
     opacity: 0.0;
 }
 
-
-.placeholder > div{
-
-    background-color: rgba(0, 0, 255, 0);
-    height: 100%;
-    width: 100%;
-    border-radius: 50%;
-    transition-property: background-color;
-    transition-duration: 2s;
+#topPane {
+    display: flex;
+    flex-direction: row;
+    justify-content:space-between;
+    margin-bottom: 1em;
+}
+#bottomPane {
+    text-align: right;
+    margin-top: 1em;
 }
 
-.placeholder:hover > div{
-    background-color: rgba(0, 0, 255, 0.26);
+.placeForNext {
+    
+    width: 3.1em;
+    height: 3.1em;
+    
+    padding: 8px;
+    box-sizing: border-box;
+    display: inline-block;
 }
 
-
-.break {
-    float: none;
+#nextBalls {
+    display: inline-flex;
+    flex-direction: row;
+    border-style: inset;
+    background-color: lightgray;
+   
 }
+
+#score {
+    background-color: lightgray;
+    border-style: inset;
+    width: 8em;
+    text-align: right;
+}
+
+button {
+    background-color: #0078d0;
+  border: 0;
+  border-radius: 56px;
+  color: white;
+ 
+  
+  font-family: "Bruno Ace";
+  
+  
+  outline: 0;
+  padding: 16px 21px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  transition: all .3s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+button:before {
+    
+    background-image: linear-gradient(#fff 0, rgba(255, 255, 255, 0) 100%);
+    border-radius: 125px;
+    content: "";
+    height: 50%;
+    left: 4%;
+    opacity: .5;
+    position: absolute;
+    top: 0;
+    transition: all .3s;
+    width: 92%;
+  }
+  
+  button:hover {
+    box-shadow: rgba(255, 255, 255, .2) 0 3px 15px inset, rgba(0, 0, 0, .1) 0 3px 5px, rgba(0, 0, 0, .1) 0 10px 13px;
+    
+  }
+
+  #help {
+    
+  }
+  
+  @media (min-width: 768px) {
+    button {
+      padding: 16px 48px;
+    }
+  }

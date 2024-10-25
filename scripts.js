@@ -183,6 +183,7 @@ class GameCell {
     row;
     col;
     node;
+    circle;
     
     #selected;
     #color;
@@ -191,13 +192,17 @@ class GameCell {
         const cellNode = document.createElement("div");
         cellNode.classList.add("cell");
         cellNode.id = `cell${r}-${c}`;
-        cellNode.appendChild(document.createElement("div"));
+
+        const circle = document.createElement("div");
+        circle.id = `circle${r}-${c}`;
+        cellNode.appendChild(circle);
 
         parentDiv.appendChild(cellNode);
 
         this.col = c;
         this.row = r;
         this.node = cellNode;
+        this.circle = circle;
         this.#selected = false;
         this.#color = null;          
     }
@@ -211,43 +216,43 @@ class GameCell {
     }
 
     select() {
-        this.node.classList.add("selected");      
+        this.circle.classList.add("selected");      
         this.#selected = true;
     }
 
     deselect() {
-        this.node.classList.remove("selected");       
+        this.circle.classList.remove("selected");       
         this.#selected = false;   
     }
 
     setColor(color) {
         if (color === null){
-            this.node.classList.remove("color" + this.#color);
-            this.node.classList.remove("circle");
+            this.circle.classList.remove("color" + this.#color);
+            this.circle.classList.remove("circle");
             this.#color = null;
         }
         else {
             this.#color = color;
-            this.node.classList.add("color" + this.#color);
-            this.node.classList.add("circle");
+            this.circle.classList.add("color" + this.#color);
+            this.circle.classList.add("circle");
         }
     }
 
     hidePath(color) {
-        this.node.classList.remove("path");
-        this.node.classList.remove("color"+ color);
+        this.circle.classList.remove("path");
+        this.circle.classList.remove("color"+ color);
     }
     
     showPath(color) {
-        this.node.classList.add("path");
-        this.node.classList.add("color" + color);
+        this.circle.classList.add("path");
+        this.circle.classList.add("color" + color);
     }
     
     showRemoving() {
-        this.node.classList.add("removing");
+        this.circle.classList.add("removing");
     }
     hideRemoving() {
-        this.node.classList.remove("removing");
+        this.circle.classList.remove("removing");
     }
 
     set onClick(handler) {
