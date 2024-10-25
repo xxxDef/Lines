@@ -1,14 +1,24 @@
 
-#gameField  {
-    background-color: green;
-    width: 495;
-    height: 495;
-    position: relative;
-    left: 100px;
-    top: 50px;
-    font-size: 0;
+#gameContainer {
+    display: flex;
+    flex-direction: column;
+    background-color: aqua;
+    
+
+    border:2px solid #ea1313;
 }
 
+#gameField  {
+    display: flex;
+    border:2px solid #b4ee08;
+    flex-direction: column;
+    flex-wrap:wrap;
+}
+.row {
+    display: inline-flex;
+    flex-direction: row;
+    border:2px solid #c70404;
+}
 .cell {
     background-color: lightgray;
     width: 55;
@@ -69,7 +79,7 @@
     } 
     to {
         opacity: 0.1;
-        transform: translate(15px, 15px);
+        transform: translate(17px, 17px);
         width: 20%;
         height: 20%;
     }
