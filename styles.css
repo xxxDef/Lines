@@ -1,10 +1,10 @@
 
 #gameContainer {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     background-color: aqua;
     
-
+    justify-content: center;
     border:2px solid #ea1313;
 }
 
@@ -12,11 +12,27 @@
     display: flex;
     border:2px solid #b4ee08;
     flex-direction: column;
-    flex-wrap:wrap;
+    flex-wrap:nowrap;
+    margin: 1em;
 }
+
+#rightPane {
+    display: flex;
+    flex-direction: column;
+    justify-content:space-around;
+}
+#score {
+    margin: 1em;
+    padding: 2em;
+    border:2px solid #b4ee08;
+    background-color: bisque;
+}
+
+
 .row {
     display: inline-flex;
     flex-direction: row;
+    flex-wrap:nowrap;
     border:2px solid #c70404;
 }
 .cell {
