@@ -319,6 +319,9 @@ class LinesGame
     #animationInProgress = false;
     #nextCircles = [];
 
+    #score = 0;
+    #high = 0;
+
     constructor() {
         const gameFieldDiv = document.getElementById("gameField");
         for (let r = 0; r < this.Rows; ++r){
@@ -341,26 +344,53 @@ class LinesGame
             const node = document.getElementById(`nextCircle${i}`);
             this.#nextCircles[i] = new NextCircle(node);
         }
-
+        this.highlightScore();
+        this.highlightHigh();
         this.nextTurn();
     }
 
     nextTurn() {
         if (this.#removeLines())
             return;
-        
+
+        let endGame = false 
         for (let nextCircle of this.#nextCircles){
 
             const newPlace = this.#getEmptyPlace();
-            if (newPlace == null)
-                return false;
-          
+            if (newPlace == null && !this.#removeLines())
+                break;           
+
             newPlace.setColor(nextCircle.color);
             nextCircle.setRandomColor();
         }
-        
-        this.#removeLines();
-        return true;
+
+        if (!this.#removeLines() && this.#getEmptyPlace() == null)
+            this.endGame();
+    }
+
+    endGame() {
+        if (this.#score > this.#high)
+        {
+            this.#high = this.#score;
+            this.highlightHigh();
+        }
+    }
+
+    highlightHigh() {
+        const div = document.getElementById("high");
+        div.textContent  = this.#high;
+    }
+    highlightScore() {
+        const div = document.getElementById("score");
+        div.textContent  = this.#score;
+    }
+    increaseScore(removedCount) {
+        if (removedCount < 5)
+            throw "unexpected removed count";
+        this.#score += 5; // first 5 balls 
+        if (removedCount > 5)
+            this.#score += (removedCount - 5) * 2; // x2 bonus for next
+        this.highlightScore();
     }
 
     getCell = (r, c) => this.#gameField[r* this.Rows + c];
@@ -435,6 +465,8 @@ class LinesGame
         if (itemsToRemove.length == 0)
             return false;
         
+        this.increaseScore(itemsToRemove.length);
+
         this.#removingLines(itemsToRemove);  
         return true;        
     }

@@ -184,7 +184,7 @@ body {
    
 }
 
-#score {
+.score {
     background-color: lightgray;
     border-style: inset;
     width: 8em;
