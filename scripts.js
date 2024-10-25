@@ -2,6 +2,14 @@
 
 class Logic
 {
+    static generateColor() {
+        return Math.floor(Math.random() * LinesGame.Colors);
+    }
+
+    static getNextRnd(max) {
+        return Math.floor(Math.random() * max);
+    }
+
     static * generateLines(rows, minLine) {
         // horisontal
         for (let row = 0; row < rows; ++row)  {
@@ -28,7 +36,7 @@ class Logic
             yield null;
         }
         for (let sum = 0; sum <= 2 * (rows - 1); sum++) {
-            console.log(`Secondary diagonal with row + col = ${sum}`);
+            //console.log(`Secondary diagonal with row + col = ${sum}`);
             for (let row = 0; row < rows; row++) {
                 let col = sum - row;
                 if (col >= 0 && col < rows) {
@@ -100,10 +108,10 @@ class Logic
 
         while (this.#fillDistances(field));
 
-        console.log(field);
+        //console.log(field);
 
         const trace = this.tracePath(field,  target);
-        console.log(trace);
+        //console.log(trace);
         return trace;
     }
 
@@ -174,7 +182,7 @@ class Logic
                 }
             }
         }
-        console.log(field);
+        //console.log(field);
         return found;
     }
 }
@@ -226,12 +234,17 @@ class GameCell {
     }
 
     setColor(color) {
+   
         if (color === null){
+            if (this.#color === null)
+                throw `clear color in empty cell`;
             this.circle.classList.remove("color" + this.#color);
             this.circle.classList.remove("circle");
             this.#color = null;
         }
         else {
+            if (this.#color !== null)
+                throw `set color ${color} but already set color ${this.#color}`;
             this.#color = color;
             this.circle.classList.add("color" + this.#color);
             this.circle.classList.add("circle");
@@ -268,6 +281,28 @@ class GameCell {
     
 }
 
+class NextCircle{
+
+    #color;
+    #node;
+
+    constructor(node) {
+        this.#node = node;
+        this.setRandomColor();
+    }
+
+    setRandomColor() {
+        if (this.#color !== null) {
+            this.#node.classList.remove(`color${this.#color}`);
+        }
+        this.#color = Logic.generateColor();
+        this.#node.classList.add(`color${this.#color}`);
+    }
+
+    get color() {
+        return this.#color;
+    }
+}
 class LinesGame
 {
     static rows = 9;  
@@ -276,19 +311,21 @@ class LinesGame
     get Rows() {
         return 9;
     }
-    get Colors() {
+    static get Colors() {
         return 5;
     }
     
     #gameField = [];
     #animationInProgress = false;
+    #nextCircles = [];
 
-    constructor(parentDiv) {
+    constructor() {
+        const gameFieldDiv = document.getElementById("gameField");
         for (let r = 0; r < this.Rows; ++r){
             const rowNode = document.createElement("div");
             rowNode.classList.add("row");
             rowNode.id = `row${r}`;
-            parentDiv.appendChild(rowNode);
+            gameFieldDiv.appendChild(rowNode);
             
             for (let c = 0; c < this.Rows; ++c){
 
@@ -299,9 +336,58 @@ class LinesGame
                 this.#gameField[r * this.Rows + c] = cell;      
             }
         }
+       
+        for (let i = 0; i < 3; ++i){
+            const node = document.getElementById(`nextCircle${i}`);
+            this.#nextCircles[i] = new NextCircle(node);
+        }
+
+        this.nextTurn();
+    }
+
+    nextTurn() {
+        if (this.#removeLines())
+            return;
+        
+        for (let nextCircle of this.#nextCircles){
+
+            const newPlace = this.#getEmptyPlace();
+            if (newPlace == null)
+                return false;
+          
+            newPlace.setColor(nextCircle.color);
+            nextCircle.setRandomColor();
+        }
+        
+        this.#removeLines();
+        return true;
     }
 
     getCell = (r, c) => this.#gameField[r* this.Rows + c];
+
+    #getEmptyPlace() {
+        const emptyCount = this.#gameField.reduce(
+            (total, cell) => (cell.color === null ? total+1 : total), 0);
+
+        console.log("empty cells:", emptyCount);    
+
+        if (emptyCount === 0) 
+            return null;
+
+        const cnt = Logic.getNextRnd(emptyCount);
+        let pos = 0;
+        for (let cell of this.#gameField) {
+            if (cell.color !== null)
+                continue;
+            if (pos === cnt) {
+                if (cell.color !== null)
+                    throw "wrong alghoritm";
+                return cell;
+            }
+            ++pos;
+        }
+        throw "unexpected end of field";
+    }
 
     #onClickCell = (cell) => {
         if (cell.color !== null)
@@ -314,14 +400,12 @@ class LinesGame
     }
     #onRightClickCell = (cell) => {
         if (cell.color === null) {
-            const color = this.#generateColor();
+            const color = Logic.generateColor();
             cell.setColor(color);
         }         
     }
 
-    #generateColor() {
-        return Math.floor(Math.random() * this.Colors);
-    }
+    
     
     
     #moveSelectedTo(cell) {
@@ -332,7 +416,7 @@ class LinesGame
         const path = Logic.getPath(this, sel, cell);
         if (path.length === 0)
             return;
-        console.log(path);
+        //console.log(path);
 
         sel.deselect();  
         const color = sel.color;
@@ -340,12 +424,22 @@ class LinesGame
         sel.setColor(null);
         this.#showPath(0, path, color, () => {
             cell.setColor(color);
-            this.#removeLines();
+            this.nextTurn();
+            
         });            
     }
 
     #removeLines() {
         const itemsToRemove = Logic.findItemsToRemove(this);
+
+        if (itemsToRemove.length == 0)
+            return false;
+        
+        this.#removingLines(itemsToRemove);  
+        return true;        
+    }
+
+    #removingLines(itemsToRemove) {
         this.#animationInProgress = true;
         for (let cell of itemsToRemove)
             cell.showRemoving();
@@ -354,9 +448,10 @@ class LinesGame
             for (let cell of itemsToRemove) {                
                 cell.hideRemoving();
                 cell.setColor(null);
+
             }
             this.#animationInProgress = false;
-        }, 300);     
+        }, 300); 
     }
 
     #showPath(current, path, color, lastStep) {
@@ -364,8 +459,7 @@ class LinesGame
         if (current == path.length)
         {
             path.forEach(p => this.getCell(p.row, p.col).hidePath(color));  
-            lastStep();
-            console.log("last timer", current);  
+            lastStep();  
             this.#animationInProgress = false;           
         }
         else {            
@@ -373,7 +467,6 @@ class LinesGame
             const cell = this.getCell(path[current].row, path[current].col);
             cell.showPath(color);
             setTimeout(() => this.#showPath(current+1, path, color, lastStep), 30);
-            console.log("next timer", current);
             
         }
         

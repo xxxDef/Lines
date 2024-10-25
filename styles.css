@@ -159,6 +159,7 @@ body {
     flex-direction: row;
     justify-content:space-between;
     margin-bottom: 1em;
+    align-items:center;
 }
 #bottomPane {
     text-align: right;
@@ -191,51 +192,49 @@ body {
 }
 
 button {
+   
+    cursor:pointer;
     background-color: #0078d0;
-  border: 0;
-  border-radius: 56px;
-  color: white;
+    border: 0;
+    border-radius: 10%;
+    color: white;
+    height: 100%;
+    font-family:inherit;
+    box-sizing: border-box;
  
-  
-  font-family: "Bruno Ace";
-  
-  
-  outline: 0;
-  padding: 16px 21px;
-  position: relative;
-  text-align: center;
-  text-decoration: none;
-  transition: all .3s;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
+    padding: 0px 0px;
+    
+    text-align: center;
+
+    transition: all .3s;
+   
+    box-shadow: 3px 4px 10px -1px rgba(0, 0, 0, 0.598);  
 }
 
-button:before {
-    
-    background-image: linear-gradient(#fff 0, rgba(255, 255, 255, 0) 100%);
-    border-radius: 125px;
-    content: "";
-    height: 50%;
-    left: 4%;
-    opacity: .5;
-    position: absolute;
-    top: 0;
-    transition: all .3s;
-    width: 92%;
-  }
-  
-  button:hover {
-    box-shadow: rgba(255, 255, 255, .2) 0 3px 15px inset, rgba(0, 0, 0, .1) 0 3px 5px, rgba(0, 0, 0, .1) 0 10px 13px;
-    
-  }
+button:hover {
+    box-shadow: 3px 4px 10px 1px rgba(0, 0, 0, 0.598);  
+}
 
-  #help {
-    
-  }
+button:active {
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.598);
+    background-color: #eb0a24;  
+}
+  
+
   
   @media (min-width: 768px) {
     button {
       padding: 16px 48px;
     }
+  }
+
+  details.inline[open] > div {
+
+    background-color: white;
+    border: 2px inset black;
+    padding: 1em;
+    border-radius: 1em;
+    box-shadow: 3px 4px 10px -1px rgba(0, 0, 0, 0.598);
+    position: absolute;
+    vertical-align:top;
   }
